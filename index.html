@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fund Tracker (Firebase)</title>
+  <title>Fund Tracker</title>
 
-  <!-- Firebase (IMPORTANT) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -11,24 +11,38 @@
     body {
       margin: 0;
       font-family: Arial;
-      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      background: linear-gradient(135deg,#1d4350,#a43931);
       color: white;
       display: flex;
       justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
 
     .box {
       width: 90%;
       max-width: 900px;
-      margin-top: 30px;
       background: rgba(255,255,255,0.1);
       padding: 20px;
       border-radius: 15px;
     }
 
-    input, select, button {
+    h1 { text-align: center; }
+
+    input, select {
       padding: 10px;
       margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      background: #00c6ff;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     table {
@@ -46,19 +60,18 @@
     }
 
     th {
-      background: #1f4037;
+      background: #333;
       color: white;
     }
 
-    button {
-      background: #00c6ff;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
+    .delete { background: red; }
+    .edit { background: orange; }
 
-    .delete {
-      background: red;
+    .balance {
+      margin-top: 15px;
+      font-size: 22px;
+      text-align: right;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -92,88 +105,104 @@
     <tbody id="tableBody"></tbody>
   </table>
 
-  <h2>Balance: <span id="balance">0</span></h2>
+  <div class="balance">
+    Balance: <span id="balance">0</span>
+  </div>
 </div>
 
 <script>
-  // 🔥 YOUR FIREBASE CONFIG (already correct)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCOwwGWeNVglAKbrPInK2D1fzVtEhS77mA",
-    authDomain: "fund-tracker-d5f11.firebaseapp.com",
-    databaseURL: "https://fund-tracker-d5f11-default-rtdb.firebaseio.com",
-    projectId: "fund-tracker-d5f11",
-    storageBucket: "fund-tracker-d5f11.firebasestorage.app",
-    messagingSenderId: "227241173054",
-    appId: "1:227241173054:web:d6eecb1a9994b20672316f"
-  };
+/* 🔥 YOUR FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyCOwwGWeNVglAKbrPInK2D1fzVtEhS77mA",
+  authDomain: "fund-tracker-d5f11.firebaseapp.com",
+  databaseURL: "https://fund-tracker-d5f11-default-rtdb.firebaseio.com",
+  projectId: "fund-tracker-d5f11",
+  storageBucket: "fund-tracker-d5f11.firebasestorage.app",
+  messagingSenderId: "227241173054",
+  appId: "1:227241173054:web:d6eecb1a9994b20672316f"
+};
 
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("transactions");
 
-  const db = firebase.database().ref("transactions");
+let editId = null;
 
-  // ADD DATA
-  function addData() {
-    let date = document.getElementById("date").value;
-    let desc = document.getElementById("desc").value;
-    let type = document.getElementById("type").value;
-    let amount = Number(document.getElementById("amount").value);
+/* ADD OR UPDATE */
+function addData() {
+  let date = document.getElementById("date").value;
+  let desc = document.getElementById("desc").value;
+  let type = document.getElementById("type").value;
+  let amount = Number(document.getElementById("amount").value);
 
-    if (!date || !desc || !amount) {
-      alert("Fill all fields");
-      return;
-    }
-
-    db.push({
-      date: date,
-      desc: desc,
-      type: type,
-      amount: amount
-    });
-
-    document.getElementById("desc").value = "";
-    document.getElementById("amount").value = "";
+  if (!date || !desc || !amount) {
+    alert("Fill all fields");
+    return;
   }
 
-  // DELETE DATA
-  function deleteData(id) {
-    db.child(id).remove();
+  if (editId) {
+    db.child(editId).set({ date, desc, type, amount });
+    editId = null;
+  } else {
+    db.push({ date, desc, type, amount });
   }
 
-  // READ DATA LIVE
-  db.on("value", function(snapshot) {
-    let data = snapshot.val();
-    let table = document.getElementById("tableBody");
-    table.innerHTML = "";
+  document.getElementById("desc").value = "";
+  document.getElementById("amount").value = "";
+}
 
-    let balance = 0;
+/* DELETE */
+function deleteItem(id) {
+  db.child(id).remove();
+}
 
-    for (let id in data) {
-      let item = data[id];
+/* EDIT */
+function editItem(id, item) {
+  document.getElementById("date").value = item.date;
+  document.getElementById("desc").value = item.desc;
+  document.getElementById("type").value = item.type;
+  document.getElementById("amount").value = item.amount;
 
-      let revenue = "";
-      let cost = "";
+  editId = id;
+}
 
-      if (item.type === "revenue") {
-        revenue = item.amount;
-        balance += item.amount;
-      } else {
-        cost = item.amount;
-        balance -= item.amount;
-      }
+/* LIVE DATA */
+db.on("value", (snapshot) => {
+  let data = snapshot.val();
+  let table = document.getElementById("tableBody");
+  table.innerHTML = "";
 
-      table.innerHTML += `
-        <tr>
-          <td>${item.date}</td>
-          <td>${item.desc}</td>
-          <td>${revenue}</td>
-          <td>${cost}</td>
-          <td><button class="delete" onclick="deleteData('${id}')">Delete</button></td>
-        </tr>
-      `;
+  let balance = 0;
+
+  for (let id in data) {
+    let item = data[id];
+
+    let revenue = "";
+    let cost = "";
+
+    if (item.type === "revenue") {
+      revenue = item.amount;
+      balance += item.amount;
+    } else {
+      cost = item.amount;
+      balance -= item.amount;
     }
 
-    document.getElementById("balance").innerText = balance;
-  });
+    table.innerHTML += `
+      <tr>
+        <td>${item.date}</td>
+        <td>${item.desc}</td>
+        <td>${revenue}</td>
+        <td>${cost}</td>
+        <td>
+          <button class="edit" onclick='editItem("${id}", ${JSON.stringify(item)})'>Edit</button>
+          <button class="delete" onclick='deleteItem("${id}")'>Delete</button>
+        </td>
+      </tr>
+    `;
+  }
+
+  document.getElementById("balance").innerText = balance;
+});
 </script>
 
 </body>
