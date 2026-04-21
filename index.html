@@ -3,85 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University Project | Fund Tracker</title>
+    <title>Hope Bridge | Fund Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif;
+            /* Background image setup */
+            background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('background.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+<body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-5xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Fund Tracker Dashboard</h1>
-                <p class="text-slate-500 font-medium">Project Financial Summary & Audit Trail</p>
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+            <div class="flex items-center gap-4">
+                <img src="logo.png" alt="Hope Bridge Logo" class="w-16 h-16 rounded-xl shadow-md object-cover bg-white" onerror="this.src='https://ui-avatars.com/api/?name=Hope+Bridge&background=4F46E5&color=fff'">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Hope Bridge</h1>
+                    <p class="text-indigo-600 font-bold uppercase tracking-widest text-xs">Project Fund Tracker</p>
+                </div>
             </div>
-            <div class="flex items-center bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+            
+            <div class="flex items-center glass-card px-4 py-2 rounded-full shadow-sm">
                 <span class="relative flex h-3 w-3 mr-3">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span class="text-sm font-semibold text-slate-600 uppercase tracking-wider" id="syncStatus">Live Sync Enabled</span>
+                <span class="text-sm font-semibold text-slate-600 uppercase tracking-wider" id="syncStatus">Live Sync Active</span>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-slate-500">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-2">Net Balance</p>
-                <div class="flex items-baseline gap-2">
-                    <span id="totalBalance" class="text-4xl font-bold text-slate-900">$0.00</span>
-                </div>
+                <span id="totalBalance" class="text-4xl font-bold text-slate-900">$0.00</span>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-emerald-500">
+            <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-emerald-500">
                 <p class="text-xs font-bold text-emerald-600 uppercase mb-2">Total Revenue</p>
-                <div class="flex items-baseline gap-2">
-                    <span id="totalRevenue" class="text-4xl font-bold text-emerald-600">$0.00</span>
-                </div>
+                <span id="totalRevenue" class="text-4xl font-bold text-emerald-600">$0.00</span>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-rose-500">
+            <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-rose-500">
                 <p class="text-xs font-bold text-rose-600 uppercase mb-2">Total Costs</p>
-                <div class="flex items-baseline gap-2">
-                    <span id="totalCost" class="text-4xl font-bold text-rose-600">$0.00</span>
-                </div>
+                <span id="totalCost" class="text-4xl font-bold text-rose-600">$0.00</span>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-bold text-slate-800">Transaction History</h3>
-                <button onclick="fetchData()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition uppercase tracking-widest">
-                    Refresh Data
+        <div class="glass-card rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white/50">
+                <h3 class="font-bold text-slate-800 tracking-tight text-lg text-indigo-900">Financial Ledger</h3>
+                <button onclick="fetchData()" class="text-xs font-bold bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition uppercase shadow-md shadow-indigo-200">
+                    Update
                 </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="text-slate-400 text-xs uppercase font-bold tracking-widest">
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4">Type</th>
+                        <tr class="text-slate-400 text-xs uppercase font-bold tracking-widest bg-slate-50/50">
+                            <th class="px-6 py-4">Item Description</th>
+                            <th class="px-6 py-4">Classification</th>
                             <th class="px-6 py-4 text-right">Amount</th>
                         </tr>
                     </thead>
                     <tbody id="transactionList" class="divide-y divide-slate-100 text-slate-700">
                         <tr>
-                            <td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">Connecting to project database...</td>
+                            <td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">Syncing with Hope Bridge database...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <p class="text-center text-slate-400 text-xs mt-8 font-medium italic">
-            Automated Fund Reporting System &copy; 2026
-        </p>
+        <div class="text-center mt-12 mb-8">
+            <p class="text-slate-500 text-sm font-medium tracking-wide">
+                &copy; 2026 <span class="font-bold text-indigo-600">Hope Bridge</span> University Project
+            </p>
+        </div>
     </div>
 
     <script>
-        // Your Specific CSV Link
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQXLZ_1VvkSTy7tyquOVn4EkzpT57lwza7_OEZFHrCPmLSaVcBxzu8Qr-po8CYO07tlCzGS0-diCC5Y/pub?output=csv';
 
         async function fetchData() {
@@ -91,7 +102,7 @@
                 if (!response.ok) throw new Error('Data fetch failed');
                 
                 const csvData = await response.text();
-                const rows = csvData.split('\n').slice(1); // Skip header row
+                const rows = csvData.split('\n').slice(1);
 
                 const transactions = rows.map(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -105,38 +116,34 @@
 
                 renderDashboard(transactions);
                 statusEl.innerText = "Live Sync Active";
-                statusEl.parentElement.classList.replace('border-rose-200', 'border-slate-200');
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('transactionList').innerHTML = `
-                    <tr><td colspan="3" class="px-6 py-10 text-center text-rose-500 font-bold">Error: Link Not Accessible. Please check sharing settings.</td></tr>
+                    <tr><td colspan="3" class="px-6 py-10 text-center text-rose-500 font-bold">Check Google Sheets Publishing Settings.</td></tr>
                 `;
-                statusEl.innerText = "Sync Failed";
-                statusEl.parentElement.classList.add('border-rose-200');
+                statusEl.innerText = "Offline";
             }
         }
 
         function renderDashboard(data) {
             const list = document.getElementById('transactionList');
             list.innerHTML = '';
-            let totalRev = 0;
-            let totalCost = 0;
+            let totalRev = 0; let totalCost = 0;
 
             data.forEach(item => {
                 const isRevenue = item.type === 'revenue';
-                if (isRevenue) totalRev += item.amount;
-                else totalCost += item.amount;
+                isRevenue ? totalRev += item.amount : totalCost += item.amount;
 
                 const row = `
-                    <tr class="hover:bg-slate-50 transition-colors">
+                    <tr class="hover:bg-white/60 transition-colors">
                         <td class="px-6 py-4 font-semibold text-slate-800">${item.desc}</td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide ${isRevenue ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${isRevenue ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                                 ${item.type.toUpperCase()}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right font-mono font-bold ${isRevenue ? 'text-emerald-600' : 'text-rose-600'}">
-                            ${isRevenue ? '+' : '-'}${item.amount.toFixed(2)}
+                            ${isRevenue ? '+' : '-'}${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </td>
                     </tr>
                 `;
@@ -148,11 +155,8 @@
             document.getElementById('totalBalance').innerText = `$${(totalRev - totalCost).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
-        // Run on load
         fetchData();
-        
-        // Auto-refresh every 60 seconds for live presentation
-        setInterval(fetchData, 60000);
+        setInterval(fetchData, 30000); // Refreshes every 30 seconds
     </script>
 </body>
 </html>
