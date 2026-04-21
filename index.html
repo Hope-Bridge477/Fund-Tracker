@@ -1,100 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Fund Tracker</title>
+  <title>Fund Tracker (Firebase)</title>
+
+  <!-- Firebase (IMPORTANT) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #141e30, #243b55);
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-  .container {
-    width: 90%;
-    max-width: 900px;
-    background: rgba(255,255,255,0.08);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    backdrop-filter: blur(10px);
-  }
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      color: white;
+      display: flex;
+      justify-content: center;
+    }
 
-  h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
+    .box {
+      width: 90%;
+      max-width: 900px;
+      margin-top: 30px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 15px;
+    }
 
-  input, select {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-  }
+    input, select, button {
+      padding: 10px;
+      margin: 5px;
+    }
 
-  button {
-    padding: 10px 15px;
-    background: #00c6ff;
-    border: none;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      background: white;
+      color: black;
+      border-collapse: collapse;
+    }
 
-  button:hover {
-    background: #0072ff;
-  }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
 
-  table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-    background: white;
-    color: black;
-    border-radius: 10px;
-    overflow: hidden;
-  }
+    th {
+      background: #1f4037;
+      color: white;
+    }
 
-  th, td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-  }
+    button {
+      background: #00c6ff;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
 
-  th {
-    background: #243b55;
-    color: white;
-  }
-
-  .delete {
-    background: red;
-    border: none;
-    padding: 5px 10px;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  .balance {
-    margin-top: 15px;
-    font-size: 22px;
-    text-align: right;
-    font-weight: bold;
-  }
-</style>
+    .delete {
+      background: red;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
   <h1>💰 Fund Tracker</h1>
 
   <input type="date" id="date">
@@ -121,258 +92,89 @@
     <tbody id="tableBody"></tbody>
   </table>
 
-  <div class="balance">
-    Balance: <span id="balance">0</span>
-  </div>
+  <h2>Balance: <span id="balance">0</span></h2>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("fundData")) || [];
+  // 🔥 YOUR FIREBASE CONFIG (already correct)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOwwGWeNVglAKbrPInK2D1fzVtEhS77mA",
+    authDomain: "fund-tracker-d5f11.firebaseapp.com",
+    databaseURL: "https://fund-tracker-d5f11-default-rtdb.firebaseio.com",
+    projectId: "fund-tracker-d5f11",
+    storageBucket: "fund-tracker-d5f11.firebasestorage.app",
+    messagingSenderId: "227241173054",
+    appId: "1:227241173054:web:d6eecb1a9994b20672316f"
+  };
 
-function save() {
-  localStorage.setItem("fundData", JSON.stringify(data));
-}
+  firebase.initializeApp(firebaseConfig);
 
-function render() {
-  let table = document.getElementById("tableBody");
-  table.innerHTML = "";
+  const db = firebase.database().ref("transactions");
 
-  let balance = 0;
+  // ADD DATA
+  function addData() {
+    let date = document.getElementById("date").value;
+    let desc = document.getElementById("desc").value;
+    let type = document.getElementById("type").value;
+    let amount = Number(document.getElementById("amount").value);
 
-  data.forEach((item, index) => {
-    let revenue = "";
-    let cost = "";
-
-    if (item.type === "revenue") {
-      revenue = item.amount;
-      balance += item.amount;
-    } else {
-      cost = item.amount;
-      balance -= item.amount;
+    if (!date || !desc || !amount) {
+      alert("Fill all fields");
+      return;
     }
 
-    table.innerHTML += `
-      <tr>
-        <td>${item.date}</td>
-        <td>${item.desc}</td>
-        <td>${revenue}</td>
-        <td>${cost}</td>
-        <td><button class="delete" onclick="removeItem(${index})">Delete</button></td>
-      </tr>
-    `;
-  });
+    db.push({
+      date: date,
+      desc: desc,
+      type: type,
+      amount: amount
+    });
 
-  document.getElementById("balance").innerText = balance;
-}
-
-function addData() {
-  let date = document.getElementById("date").value;
-  let desc = document.getElementById("desc").value;
-  let type = document.getElementById("type").value;
-  let amount = Number(document.getElementById("amount").value);
-
-  if (!date || !desc || !amount) {
-    alert("Fill all fields");
-    return;
+    document.getElementById("desc").value = "";
+    document.getElementById("amount").value = "";
   }
 
-  data.push({ date, desc, type, amount });
-  save();
-  render();
-
-  document.getElementById("desc").value = "";
-  document.getElementById("amount").value = "";
-}
-
-function removeItem(index) {
-  data.splice(index, 1);
-  save();
-  render();
-}
-
-render();
-</script>
-
-</body>
-</html><!DOCTYPE html>
-<html>
-<head>
-  <title>Fund Tracker</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f4f6f8;
-      text-align: center;
-    }
-    h1 { color: #2c3e50; }
-
-    .container {
-      background: white;
-      padding: 20px;
-      margin: 20px auto;
-      width: 80%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    input, select { padding: 8px; margin: 5px; }
-
-    button {
-      padding: 8px 15px;
-      background: #27ae60;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-    }
-
-    th {
-      background: #2c3e50;
-      color: white;
-    }
-
-    .balance {
-      font-size: 20px;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    .delete-btn {
-      background: red;
-      padding: 5px;
-      font-size: 12px;
-    }
-  </style>
-</head>
-
-<body>
-
-<h1>💰 Fund Tracker</h1>
-
-<div class="container">
-  <input type="date" id="date">
-  <input type="text" id="desc" placeholder="Description">
-
-  <select id="type">
-    <option value="revenue">Revenue</option>
-    <option value="cost">Cost</option>
-  </select>
-
-  <input type="number" id="amount" placeholder="Amount">
-  <button onclick="addTransaction()">Add</button>
-
-  <table id="table">
-    <tr>
-      <th>Date</th>
-      <th>Description</th>
-      <th>Revenue</th>
-      <th>Cost</th>
-      <th>Action</th>
-    </tr>
-  </table>
-
-  <div class="balance">
-    Balance: <span id="balance">0</span>
-  </div>
-</div>
-
-<script>
-let transactions = JSON.parse(localStorage.getItem("data")) || [];
-let balance = 0;
-
-function saveData() {
-  localStorage.setItem("data", JSON.stringify(transactions));
-}
-
-function renderTable() {
-  let table = document.getElementById("table");
-
-  table.innerHTML = `
-    <tr>
-      <th>Date</th>
-      <th>Description</th>
-      <th>Revenue</th>
-      <th>Cost</th>
-      <th>Action</th>
-    </tr>
-  `;
-
-  balance = 0;
-
-  transactions.forEach((t, index) => {
-    let row = table.insertRow();
-
-    let rev = t.type === "revenue" ? t.amount : "";
-    let cost = t.type === "cost" ? t.amount : "";
-
-    if (t.type === "revenue") balance += t.amount;
-    else balance -= t.amount;
-
-    row.insertCell(0).innerText = t.date;
-    row.insertCell(1).innerText = t.desc;
-    row.insertCell(2).innerText = rev;
-    row.insertCell(3).innerText = cost;
-
-    let actionCell = row.insertCell(4);
-    actionCell.innerHTML = `
-      <button class="delete-btn" onclick="deleteTransaction(${index})">Delete</button>
-    `;
-  });
-
-  document.getElementById("balance").innerText = balance;
-}
-
-function addTransaction() {
-  let date = document.getElementById("date").value;
-  let desc = document.getElementById("desc").value;
-  let type = document.getElementById("type").value;
-  let amount = Number(document.getElementById("amount").value);
-
-  if (!date || !desc || !amount) {
-    alert("Please fill all fields");
-    return;
+  // DELETE DATA
+  function deleteData(id) {
+    db.child(id).remove();
   }
 
-  transactions.push({ date, desc, type, amount });
-  saveData();
-  renderTable();
+  // READ DATA LIVE
+  db.on("value", function(snapshot) {
+    let data = snapshot.val();
+    let table = document.getElementById("tableBody");
+    table.innerHTML = "";
 
-  document.getElementById("desc").value = "";
-  document.getElementById("amount").value = "";
-}
+    let balance = 0;
 
-function deleteTransaction(index) {
-  transactions.splice(index, 1);
-  saveData();
-  renderTable();
-}
+    for (let id in data) {
+      let item = data[id];
 
-// initial load
-renderTable();
+      let revenue = "";
+      let cost = "";
+
+      if (item.type === "revenue") {
+        revenue = item.amount;
+        balance += item.amount;
+      } else {
+        cost = item.amount;
+        balance -= item.amount;
+      }
+
+      table.innerHTML += `
+        <tr>
+          <td>${item.date}</td>
+          <td>${item.desc}</td>
+          <td>${revenue}</td>
+          <td>${cost}</td>
+          <td><button class="delete" onclick="deleteData('${id}')">Delete</button></td>
+        </tr>
+      `;
+    }
+
+    document.getElementById("balance").innerText = balance;
+  });
 </script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCOwwGWeNVglAKbrPInK2D1fzVtEhS77mA",
-  authDomain: "fund-tracker-d5f11.firebaseapp.com",
-  databaseURL: "https://fund-tracker-d5f11-default-rtdb.firebaseio.com",
-  projectId: "fund-tracker-d5f11",
-  storageBucket: "fund-tracker-d5f11.firebasestorage.app",
-  messagingSenderId: "227241173054",
-  appId: "1:227241173054:web:d6eecb1a9994b20672316f"
-};
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database().ref("transactions");
-</script>
 </body>
 </html>
