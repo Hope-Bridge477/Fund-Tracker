@@ -2,31 +2,124 @@
 <html>
 <head>
   <title>Fund Tracker</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      width: 80%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select {
+      padding: 8px;
+      margin: 5px;
+    }
+    button {
+      padding: 8px 15px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    th {
+      background: #2c3e50;
+      color: white;
+    }
+    .balance {
+      font-size: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
-  <h2>Fund Tracker</h2>
 
+<h1>💰 Fund Tracker</h1>
+
+<div class="container">
+  <input type="date" id="date">
   <input type="text" id="desc" placeholder="Description">
+  
+  <select id="type">
+    <option value="revenue">Revenue</option>
+    <option value="cost">Cost</option>
+  </select>
+
   <input type="number" id="amount" placeholder="Amount">
-  <button onclick="addRevenue()">Add Revenue</button>
-  <button onclick="addCost()">Add Cost</button>
+  <button onclick="addTransaction()">Add</button>
 
-  <h3>Balance: <span id="balance">0</span></h3>
+  <table id="table">
+    <tr>
+      <th>Date</th>
+      <th>Description</th>
+      <th>Revenue</th>
+      <th>Cost</th>
+    </tr>
+  </table>
 
-  <script>
-    let balance = 0;
+  <div class="balance">
+    Balance: <span id="balance">0</span>
+  </div>
+</div>
 
-    function addRevenue() {
-      let amount = Number(document.getElementById("amount").value);
+<script>
+  let balance = 0;
+
+  function addTransaction() {
+    let date = document.getElementById("date").value;
+    let desc = document.getElementById("desc").value;
+    let type = document.getElementById("type").value;
+    let amount = Number(document.getElementById("amount").value);
+
+    if (!date || !desc || !amount) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    let table = document.getElementById("table");
+    let row = table.insertRow();
+
+    let rev = "";
+    let cost = "";
+
+    if (type === "revenue") {
       balance += amount;
-      document.getElementById("balance").innerText = balance;
+      rev = amount;
+    } else {
+      balance -= amount;
+      cost = amount;
     }
 
-    function addCost() {
-      let amount = Number(document.getElementById("amount").value);
-      balance -= amount;
-      document.getElementById("balance").innerText = balance;
-    }
-  </script>
+    row.insertCell(0).innerText = date;
+    row.insertCell(1).innerText = desc;
+    row.insertCell(2).innerText = rev;
+    row.insertCell(3).innerText = cost;
+
+    document.getElementById("balance").innerText = balance;
+
+    document.getElementById("desc").value = "";
+    document.getElementById("amount").value = "";
+  }
+</script>
+
 </body>
 </html>
