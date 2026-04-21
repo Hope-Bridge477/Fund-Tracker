@@ -1,4 +1,199 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fund Tracker</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 900px;
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  input, select {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+  }
+
+  button {
+    padding: 10px 15px;
+    background: #00c6ff;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0072ff;
+  }
+
+  table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    background: white;
+    color: black;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background: #243b55;
+    color: white;
+  }
+
+  .delete {
+    background: red;
+    border: none;
+    padding: 5px 10px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .balance {
+    margin-top: 15px;
+    font-size: 22px;
+    text-align: right;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>💰 Fund Tracker</h1>
+
+  <input type="date" id="date">
+  <input type="text" id="desc" placeholder="Description">
+
+  <select id="type">
+    <option value="revenue">Revenue</option>
+    <option value="cost">Cost</option>
+  </select>
+
+  <input type="number" id="amount" placeholder="Amount">
+  <button onclick="addData()">Add</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Revenue</th>
+        <th>Cost</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <div class="balance">
+    Balance: <span id="balance">0</span>
+  </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("fundData")) || [];
+
+function save() {
+  localStorage.setItem("fundData", JSON.stringify(data));
+}
+
+function render() {
+  let table = document.getElementById("tableBody");
+  table.innerHTML = "";
+
+  let balance = 0;
+
+  data.forEach((item, index) => {
+    let revenue = "";
+    let cost = "";
+
+    if (item.type === "revenue") {
+      revenue = item.amount;
+      balance += item.amount;
+    } else {
+      cost = item.amount;
+      balance -= item.amount;
+    }
+
+    table.innerHTML += `
+      <tr>
+        <td>${item.date}</td>
+        <td>${item.desc}</td>
+        <td>${revenue}</td>
+        <td>${cost}</td>
+        <td><button class="delete" onclick="removeItem(${index})">Delete</button></td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("balance").innerText = balance;
+}
+
+function addData() {
+  let date = document.getElementById("date").value;
+  let desc = document.getElementById("desc").value;
+  let type = document.getElementById("type").value;
+  let amount = Number(document.getElementById("amount").value);
+
+  if (!date || !desc || !amount) {
+    alert("Fill all fields");
+    return;
+  }
+
+  data.push({ date, desc, type, amount });
+  save();
+  render();
+
+  document.getElementById("desc").value = "";
+  document.getElementById("amount").value = "";
+}
+
+function removeItem(index) {
+  data.splice(index, 1);
+  save();
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html><!DOCTYPE html>
 <html>
 <head>
   <title>Fund Tracker</title>
