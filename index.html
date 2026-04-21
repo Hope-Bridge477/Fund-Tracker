@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fund Tracker</title>
+</head>
+<body>
+  <h2>Fund Tracker</h2>
+
+  <input type="text" id="desc" placeholder="Description">
+  <input type="number" id="amount" placeholder="Amount">
+  <button onclick="addRevenue()">Add Revenue</button>
+  <button onclick="addCost()">Add Cost</button>
+
+  <h3>Balance: <span id="balance">0</span></h3>
+
+  <script>
+    let balance = 0;
+
+    function addRevenue() {
+      let amount = Number(document.getElementById("amount").value);
+      balance += amount;
+      document.getElementById("balance").innerText = balance;
+    }
+
+    function addCost() {
+      let amount = Number(document.getElementById("amount").value);
+      balance -= amount;
+      document.getElementById("balance").innerText = balance;
+    }
+  </script>
+</body>
+</html>
