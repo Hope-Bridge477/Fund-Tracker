@@ -9,7 +9,7 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif;
-            background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('background.jpg');
+            background-image: linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)), url('background.jpg');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
@@ -26,7 +26,7 @@
     <div class="max-w-5xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
             <div class="flex items-center gap-4">
-                <img src="logo.png" alt="Hope Bridge Logo" class="w-16 h-16 rounded-xl shadow-md object-cover bg-white" onerror="this.src='https://ui-avatars.com/api/?name=Hope+Bridge&background=4F46E5&color=fff'">
+                <img src="logo.png" alt="Logo" class="w-16 h-16 rounded-xl shadow-md object-cover bg-white" onerror="this.src='https://ui-avatars.com/api/?name=Hope+Bridge&background=4F46E5&color=fff'">
                 <div>
                     <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Hope Bridge</h1>
                     <p class="text-indigo-600 font-bold uppercase tracking-widest text-xs">Project Fund Tracker</p>
@@ -42,19 +42,19 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-slate-500">
-                <p class="text-xs font-bold text-slate-400 uppercase mb-2 text-left">Net Balance</p>
+                <p class="text-xs font-bold text-slate-400 uppercase mb-2">Net Balance</p>
                 <span id="totalBalance" class="text-3xl font-bold text-slate-900 font-mono">Rs. 0.00</span>
             </div>
 
             <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-emerald-500 text-emerald-600">
-                <p class="text-xs font-bold uppercase mb-2 text-left">Total Revenue</p>
+                <p class="text-xs font-bold uppercase mb-2">Total Revenue</p>
                 <span id="totalRevenue" class="text-3xl font-bold font-mono">Rs. 0.00</span>
             </div>
 
             <div class="glass-card p-6 rounded-2xl shadow-lg border-t-4 border-t-rose-500 text-rose-600">
-                <p class="text-xs font-bold uppercase mb-2 text-left">Total Costs</p>
+                <p class="text-xs font-bold uppercase mb-2">Total Costs</p>
                 <span id="totalCost" class="text-3xl font-bold font-mono">Rs. 0.00</span>
             </div>
         </div>
@@ -76,22 +76,20 @@
                         </tr>
                     </thead>
                     <tbody id="transactionList" class="divide-y divide-slate-100 text-slate-700">
-                        <tr><td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">Connecting to Hope Bridge database...</td></tr>
+                        <tr><td colspan="3" class="px-6 py-10 text-center text-slate-400 italic">Connecting to Hope Bridge Database...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <div class="text-center mt-12 mb-8">
-            <p class="text-slate-500 text-sm font-medium">
-                &copy; 2026 <span class="font-bold text-indigo-600 tracking-wide">HOPE BRIDGE</span> Fund Management
-            </p>
+        <div class="text-center mt-12 mb-8 text-slate-500 text-sm font-medium">
+            <p>&copy; 2026 <span class="font-bold text-indigo-600 tracking-wide uppercase">Hope Bridge</span> | University Project</p>
         </div>
     </div>
 
     <script>
-        // NEW UPDATED CSV LINK
-        const baseCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSxCmM-pnye0gF-Oop2Aof_BLQ24Y3zVb9GZhDaIJlKYdiW6AOW9uFL4ZK1I3vRtUSd02pFrkMR7Nnp/pub?output=csv';
+        // THE SPECIFIC NEW LINK
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSxCmM-pnye0gF-Oop2Aof_BLQ24Y3zVb9GZhDaIJlKYdiW6AOW9uFL4ZK1I3vRtUSd02pFrkMR7Nnp/pub?output=csv';
 
         async function fetchData() {
             const statusEl = document.getElementById('syncStatus');
@@ -99,17 +97,14 @@
             const dot = document.getElementById('statusDot');
 
             try {
-                // Cache busting to ensure fresh data
-                const cacheBuster = `&t=${new Date().getTime()}`;
-                const response = await fetch(baseCsvUrl + cacheBuster);
+                // Add timestamp to prevent browser from showing old data
+                const response = await fetch(`${csvUrl}&t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error();
                 
-                if (!response.ok) throw new Error('Network Error');
-                
-                const csvData = await response.text();
-                const rows = csvData.split('\n').slice(1);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
 
                 const transactions = rows.map(row => {
-                    // Match Item Description, Amount, Classification
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (cols.length < 3) return null;
                     return {
@@ -119,63 +114,57 @@
                     };
                 }).filter(t => t !== null && !isNaN(t.amount));
 
-                renderDashboard(transactions);
+                updateUI(transactions);
                 
                 statusEl.innerText = "Live Sync Active";
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
                 ping.style.display = "block";
-
-            } catch (error) {
-                console.error('Error:', error);
-                statusEl.innerText = "Connection Error";
+            } catch (e) {
+                statusEl.innerText = "Sync Error";
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500";
                 ping.style.display = "none";
             }
         }
 
-        function formatCurrency(num) {
-            return "Rs. " + num.toLocaleString('en-LK', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+        function formatLKR(val) {
+            return "Rs. " + val.toLocaleString('en-LK', { minimumFractionDigits: 2 });
         }
 
-        function renderDashboard(data) {
+        function updateUI(data) {
             const list = document.getElementById('transactionList');
             list.innerHTML = '';
-            let totalRev = 0; let totalCost = 0;
+            let rev = 0; let cost = 0;
 
             data.forEach(item => {
-                const isRevenue = item.type === 'revenue';
-                isRevenue ? totalRev += item.amount : totalCost += item.amount;
+                const isRev = item.type === 'revenue';
+                isRev ? rev += item.amount : cost += item.amount;
 
                 const row = `
                     <tr class="hover:bg-white/60 transition-colors">
                         <td class="px-6 py-4 font-semibold text-slate-800">${item.desc}</td>
                         <td class="px-6 py-4 text-center">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${isRevenue ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${isRev ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
                                 ${item.type.toUpperCase()}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right font-mono font-bold ${isRevenue ? 'text-emerald-600' : 'text-rose-600'}">
-                            ${isRevenue ? '+' : '-'}${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                        <td class="px-6 py-4 text-right font-mono font-bold ${isRev ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${isRev ? '+' : '-'}${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
                 list.insertAdjacentHTML('beforeend', row);
             });
 
-            document.getElementById('totalRevenue').innerText = formatCurrency(totalRev);
-            document.getElementById('totalCost').innerText = formatCurrency(totalCost);
+            document.getElementById('totalRevenue').innerText = formatLKR(rev);
+            document.getElementById('totalCost').innerText = formatLKR(cost);
             
-            const balance = totalRev - totalCost;
-            const balanceEl = document.getElementById('totalBalance');
-            balanceEl.innerText = formatCurrency(balance);
-            balanceEl.className = `text-3xl font-bold font-mono ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            const bal = rev - cost;
+            const balEl = document.getElementById('totalBalance');
+            balEl.innerText = formatLKR(bal);
+            balEl.className = `text-3xl font-bold font-mono ${bal >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
         }
 
         fetchData();
-        setInterval(fetchData, 20000); 
+        setInterval(fetchData, 30000); // 30-second auto-update
     </script>
 </body>
 </html>
